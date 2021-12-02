@@ -11,6 +11,8 @@ const moods = require("./moods.json")
 const baseUrl = "ncs.io"
 const getMusicPath = "/music-search"
 
+const outFolder = "out/"
+
 async function getPage({mood, genre, page}){
 	let args = []
 
@@ -30,29 +32,49 @@ async function getRelativeUrlsFromPage(htmlstr){
 	let players = html.find(".player-play")
 	return players.map(function() {
 		return $(this).data("url")
-	}).get()
+	}).get().filter(url => url)
 }
 
+const fileNameFromUrl = (url) => url.split("/").slice(-1)[0];
+
 async function downloadMP3(url){
-	let resp = await axios({
+	const writer = fs.createWriteStream(outFolder + fileNameFromUrl(url))
+	const response = await axios({
 	    method: "get",
 	    url: url,
 	    responseType: "stream"
 	})
-	resp.data.pipe(fs.createWriteStream("out/" + url.split("/").slice(-1)[0] + ".mp3"))
+	response.data.pipe(writer)
+		return new Promise((resolve, reject) => {
+	    writer.on('finish', resolve)
+	    writer.on('error', reject)
+	})
 }
 
-async function downloadMP3s(urls){
+async function downloadMP3s(urls, force){
+	if (!force) 
+		urls = urls.filter(url => !fs.existsSync(outFolder + fileNameFromUrl(url)))
 	urls.forEach(url => downloadMP3(url))
 }
 
 async function main(){
+	const wantedGenres = [
+		genres.DRUM_AND_BASS,
+		genres.BASS,
+		genres.CHILL,
+		genres.HOUSE
+	];
+
 	let pageCount = 0;
+
+	if (!fs.existsSync(outFolder)) 
+		fs.mkdir(outFolder, "0777", () => {})
 
 	while(true){
 		console.log("Getting page:" + pageCount)
 		let page = await getPage({page: pageCount, genre: genres.DRUM_AND_BASS})
 		let urls = await getRelativeUrlsFromPage(page)
+
 		if (urls.length === 1) break;
 
 		await downloadMP3s(urls)
