@@ -2,9 +2,10 @@
   "name": "ncs",
   "version": "1.0.0",
   "description": "download all ncs songs",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "ncs": "node ./src/ncs/index.js",
+    "freemusicarchive": "node ./src/free-music-archive/index.js"
   },
   "author": "James Attfield",
   "license": "ISC",

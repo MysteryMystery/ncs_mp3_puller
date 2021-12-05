@@ -6,12 +6,13 @@ const fs = require("fs")
 
 const genres = require("./genres.json")
 const moods = require("./moods.json")
+const common = require("../common");
 
 //https://ncs.io/music-search?q=&genre=" + genre + "&mood=" + mood
 const baseUrl = "ncs.io"
 const getMusicPath = "/music-search"
 
-const outFolder = "out/"
+const outFolder = "out/ncs/"
 
 async function getPage({mood, genre, page}){
 	let args = []
@@ -35,28 +36,6 @@ async function getRelativeUrlsFromPage(htmlstr){
 	}).get().filter(url => url)
 }
 
-const fileNameFromUrl = (url) => url.split("/").slice(-1)[0];
-
-async function downloadMP3(url){
-	const writer = fs.createWriteStream(outFolder + fileNameFromUrl(url))
-	const response = await axios({
-	    method: "get",
-	    url: url,
-	    responseType: "stream"
-	})
-	response.data.pipe(writer)
-		return new Promise((resolve, reject) => {
-	    writer.on('finish', resolve)
-	    writer.on('error', reject)
-	})
-}
-
-async function downloadMP3s(urls, force){
-	if (!force) 
-		urls = urls.filter(url => !fs.existsSync(outFolder + fileNameFromUrl(url)))
-	urls.forEach(url => downloadMP3(url))
-}
-
 async function main(){
 	const wantedGenres = [
 		genres.DRUM_AND_BASS,
@@ -65,21 +44,24 @@ async function main(){
 		genres.HOUSE
 	];
 
-	let pageCount = 0;
 
 	if (!fs.existsSync(outFolder)) 
 		fs.mkdir(outFolder, "0777", () => {})
 
-	while(true){
-		console.log("Getting page:" + pageCount)
-		let page = await getPage({page: pageCount, genre: genres.DRUM_AND_BASS})
-		let urls = await getRelativeUrlsFromPage(page)
+	for(const genre of wantedGenres){
+		console.log("Getting genre: " + genre)
+		let pageCount = 0;
+		while(true){
+			console.log("Getting page:" + pageCount)
+			let page = await getPage({page: pageCount, genre: genre})
+			let urls = await getRelativeUrlsFromPage(page)
 
-		if (urls.length === 1) break;
+			if (urls.length === 1) break;
 
-		await downloadMP3s(urls)
+			await common.downloadMP3s(urls, outFolder)
 
-		pageCount++;
+			pageCount++;
+		}
 	}
 }
 
