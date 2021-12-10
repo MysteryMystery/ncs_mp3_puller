@@ -1,9 +1,10 @@
 {
   "name": "ncs",
   "version": "1.0.0",
-  "description": "download all ncs songs",
+  "description": "download free songs songs",
   "main": "src/index.js",
   "scripts": {
+    "main": "node ./src/index.js",
     "ncs": "node ./src/ncs/index.js",
     "freemusicarchive": "node ./src/free-music-archive/index.js"
   },

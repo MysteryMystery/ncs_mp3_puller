@@ -6,7 +6,6 @@ const fs = require("fs")
 
 const common = require("../common");
 
-//https://ncs.io/music-search?q=&genre=" + genre + "&mood=" + mood
 const baseUrl = "freemusicarchive.org"
 const getMusicPath = "/genre"
 
@@ -39,12 +38,7 @@ async function getRelativeUrlsFromPage(htmlstr){
 	}).get().filter(url => url)
 }
 
-async function main(){
-	const wantedGenres = [
-		genres.death_metal,
-		genres.metal
-	];
-
+async function downloadMusic(wantedGenres){
 	if (!fs.existsSync(outFolder)) 
 		fs.mkdir(outFolder, "0777", () => {})
 
@@ -65,4 +59,13 @@ async function main(){
 	}
 }
 
-main()
+async function main(){
+	const wantedGenres = [
+		genres.death_metal,
+		genres.metal
+	];
+
+	await downloadMusic(genres)
+}
+
+module.exports = {genres, downloadMusic}

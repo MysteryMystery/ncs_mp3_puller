@@ -36,15 +36,7 @@ async function getRelativeUrlsFromPage(htmlstr){
 	}).get().filter(url => url)
 }
 
-async function main(){
-	const wantedGenres = [
-		genres.DRUM_AND_BASS,
-		genres.BASS,
-		genres.CHILL,
-		genres.HOUSE
-	];
-
-
+async function downloadMusic(wantedGenres){
 	if (!fs.existsSync(outFolder)) 
 		fs.mkdir(outFolder, "0777", () => {})
 
@@ -65,4 +57,15 @@ async function main(){
 	}
 }
 
-main()
+async function main(){
+	const wantedGenres = [
+		genres.DRUM_AND_BASS,
+		genres.BASS,
+		genres.CHILL,
+		genres.HOUSE
+	];
+
+	await downloadMusic(wantedGenres)
+}
+
+module.exports = {downloadMusic, genres}
